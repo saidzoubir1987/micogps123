@@ -83,7 +83,7 @@ export const addCustomer = (customerData: Omit<Customer, 'id' | 'joinDate' | 'st
         ...customerData,
         id: `c${Date.now()}`,
         joinDate: new Date().toISOString(),
-        status: SubscriptionStatus.Active, // Initially active, will have no devices
+        status: SubscriptionStatus.Expired, // A new customer has no devices, so status is Expired
     };
     mockCustomers.push(newCustomer);
     return simulateDelay(newCustomer);
@@ -96,17 +96,15 @@ export const updateCustomer = (updatedCustomer: Customer): Promise<Customer> => 
     }
     return Promise.reject('Customer not found');
 }
-export const deleteCustomer = (customerId: string): Promise<void> => {
+export const deleteCustomer = (customerId: string): Promise<{success: boolean}> => {
     mockCustomers = mockCustomers.filter(c => c.id !== customerId);
     mockDevices = mockDevices.filter(d => d.customerId !== customerId);
-    return simulateDelay(undefined);
+    return simulateDelay({success: true});
 }
 
 // Device Functions
 export const getDevices = (): Promise<Device[]> => simulateDelay([...mockDevices]);
-export const getDevicesForCustomer = (customerId: string): Promise<Device[]> => {
-    return simulateDelay(mockDevices.filter(d => d.customerId === customerId));
-}
+
 export const addDevice = (deviceData: Omit<Device, 'id' | 'status' | 'endDate'>): Promise<Device> => {
     const startDate = new Date(deviceData.startDate);
     const endDate = new Date(startDate);
@@ -134,12 +132,12 @@ export const updateDevice = (updatedDevice: Device): Promise<Device> => {
     }
     return Promise.reject('Device not found');
 }
-export const deleteDevice = (deviceId: string): Promise<void> => {
+export const deleteDevice = (deviceId: string): Promise<{success: boolean}> => {
     const device = mockDevices.find(d => d.id === deviceId);
     if(device){
         const customerId = device.customerId;
         mockDevices = mockDevices.filter(d => d.id !== deviceId);
         updateCustomerStatus(customerId);
     }
-    return simulateDelay(undefined);
+    return simulateDelay({success: true});
 }
