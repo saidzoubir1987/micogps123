@@ -4,9 +4,15 @@ import { Customer, Device, SubscriptionStatus, DeviceStatus } from '../types';
 // LocalStorage keys
 const CUSTOMERS_KEY = 'subscription_customers';
 const DEVICES_KEY = 'subscription_devices';
+const INITIALIZED_KEY = 'subscription_initialized';
 
 // Initialize with sample data if empty
 const initializeSampleData = () => {
+  // Check if already initialized
+  if (localStorage.getItem(INITIALIZED_KEY)) {
+    return;
+  }
+
   if (!localStorage.getItem(CUSTOMERS_KEY)) {
     const sampleCustomers: Customer[] = [
       {
@@ -59,11 +65,18 @@ const initializeSampleData = () => {
     ];
     localStorage.setItem(DEVICES_KEY, JSON.stringify(sampleDevices));
   }
+
+  // Mark as initialized
+  localStorage.setItem(INITIALIZED_KEY, 'true');
 };
 
 // Helper to generate unique IDs
 const generateId = (): string => {
-  return Date.now().toString() + Math.random().toString(36).substr(2, 9);
+  // Use crypto.randomUUID if available, otherwise fallback
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return Date.now().toString() + Math.random().toString(36).substring(2, 11);
 };
 
 // Customer CRUD operations
